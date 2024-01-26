@@ -43,5 +43,13 @@
 		<PackageReference Include="TinyMath" Version="*" />
 
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Info\" />
+	  <Folder Include="Resources\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="Resources\logo.bmp" />
+	  <EmbeddedResource Include="Resources\logo.bmp" />
+	</ItemGroup>
 
 </Project>
