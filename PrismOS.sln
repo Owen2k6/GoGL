@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrismAPI", "PrismAPI\PrismAPI.csproj", "{8F1A7D23-919E-43DA-97C0-5D5A2BCB758F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoGL", "GoGL\GoGL.csproj", "{8F1A7D23-919E-43DA-97C0-5D5A2BCB758F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
