@@ -6,27 +6,27 @@
 /// </summary>
 public class Glyph
 {
-	#region Constructors
+    #region Constructors
 
-	/// <summary>
-	/// Creates a new instance of the <see cref="Glyph"/> class.
-	/// </summary>
-	/// <param name="Width">The width of the glyph.</param>
-	/// <param name="Height">The height of the glyph.</param>
-	public Glyph(ushort Width, ushort Height)
-	{
-		this.Height = Height;
-		this.Width = Width;
-		Points = new();
-	}
+    /// <summary>
+    /// Creates a new instance of the <see cref="Glyph"/> class.
+    /// </summary>
+    /// <param name="Width">The width of the glyph.</param>
+    /// <param name="Height">The height of the glyph.</param>
+    public Glyph(ushort Width, ushort Height)
+    {
+        this.Height = Height;
+        this.Width = Width;
+        Points = new();
+    }
 
-	#endregion
+    #endregion
 
-	#region Fields
+    #region Fields
 
-	public List<(int X, int Y)> Points;
-	public ushort Height;
-	public ushort Width;
+    public List<(int X, int Y)> Points;
+    public ushort Height;
+    public ushort Width;
 
-	#endregion
+    #endregion
 }

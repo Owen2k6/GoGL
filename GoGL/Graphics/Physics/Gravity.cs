@@ -4,29 +4,29 @@ namespace GoGL.Graphics.Physics;
 
 public class Gravity
 {
-	public Gravity()
-	{
-		Velocity = Vector3.Zero;
-	}
+    public Gravity()
+    {
+        Velocity = Vector3.Zero;
+    }
 
-	#region Methods
+    #region Methods
 
-	public void Next()
-	{
-		Velocity += Force - new Vector3(Mass);
-		Velocity.Z -= 9.80665f;
+    public void Next()
+    {
+        Velocity += Force - new Vector3(Mass);
+        Velocity.Z -= 9.80665f;
 
-		Speed = (Velocity.X + Velocity.Y + Velocity.Z) / 3;
-	}
+        Speed = (Velocity.X + Velocity.Y + Velocity.Z) / 3;
+    }
 
-	#endregion
+    #endregion
 
-	#region Fields
+    #region Fields
 
-	public Vector3 Velocity;
-	public Vector3 Force;
-	public float Speed;
-	public float Mass;
+    public Vector3 Velocity;
+    public Vector3 Force;
+    public float Speed;
+    public float Mass;
 
-	#endregion
+    #endregion
 }

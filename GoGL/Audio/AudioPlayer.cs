@@ -9,7 +9,7 @@ namespace GoGL.Audio;
 /// </summary>
 public static class AudioPlayer
 {
-	#region Constructors
+    #region Constructors
 
     /// <summary>
     /// Initializes the audio manager uppon app running.
@@ -22,43 +22,43 @@ public static class AudioPlayer
         AM = new();
     }
 
-	#endregion
+    #endregion
 
-	#region Properties
+    #region Properties
 
     /// <summary>
     /// A bool defining whether the audio player is available.
     /// </summary>
-	public static bool IsAvailable { get; internal set; }
+    public static bool IsAvailable { get; internal set; }
 
-	#endregion
+    #endregion
 
-	#region Methods
+    #region Methods
 
     /// <summary>
     /// Attempts to load the audio driver.
     /// <see cref="IsAvailable"/> will become True if the operation was sucessfull.
     /// </summary>
-	public static void Init()
+    public static void Init()
     {
-		try
-		{
-			Debugger.WritePartial("Initializing audio...");
+        try
+        {
+            Debugger.WritePartial("Initializing audio...");
 
-			// Assign values and initialize audio player.
-			AM.Output = AC97.Initialize(4096);
-			AM.Stream = Mixer;
-			AM.Enable();
+            // Assign values and initialize audio player.
+            AM.Output = AC97.Initialize(4096);
+            AM.Stream = Mixer;
+            AM.Enable();
 
-			// Inform that audio player is done initializing.
-			Debugger.Finalize(Severity.Success);
-			IsAvailable = true;
-		}
-		catch
-		{
-			Debugger.Finalize(Severity.Fail);
-		}
-	}
+            // Inform that audio player is done initializing.
+            Debugger.Finalize(Severity.Success);
+            IsAvailable = true;
+        }
+        catch
+        {
+            Debugger.Finalize(Severity.Fail);
+        }
+    }
 
     /// <summary>
     /// Plays an audio stream, which can be loaded from any supported format.

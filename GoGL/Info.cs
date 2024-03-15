@@ -7,11 +7,12 @@ public class Info
 {
     [ManifestResourceStream(ResourceName = "GoGL.Resources.logo.bmp")]
     static byte[] GoGLLogoRaw;
+
     public Canvas GoGLLogo;
 
     public String getVersion()
     {
-        return "0.0.2";
+        return "0.0.3";
     }
 
     public String getApiVersion()

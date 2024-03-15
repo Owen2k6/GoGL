@@ -40,7 +40,8 @@ public unsafe static class Synth
             Writer.Write(TempSample);
         }
 
-        return new MemoryAudioStream(new(AudioBitDepth.Bits16, 1, true), Samples, ((MemoryStream)Writer.BaseStream).ToArray());
+        return new MemoryAudioStream(new(AudioBitDepth.Bits16, 1, true), Samples,
+            ((MemoryStream)Writer.BaseStream).ToArray());
     }
 
     /// <summary>
@@ -78,7 +79,8 @@ public unsafe static class Synth
 
         Console.WriteLine("Finished");
 
-        return new MemoryAudioStream(new(AudioBitDepth.Bits16, 1, true), Samples, ((MemoryStream)Writer.BaseStream).ToArray());
+        return new MemoryAudioStream(new(AudioBitDepth.Bits16, 1, true), Samples,
+            ((MemoryStream)Writer.BaseStream).ToArray());
     }
 
     /// <summary>
@@ -97,7 +99,8 @@ public unsafe static class Synth
             Writer.Write(Convert.ToInt16(Amplitude * Math.Sign(Math.Sin(Frequency * I))));
         }
 
-        return new MemoryAudioStream(new(AudioBitDepth.Bits16, 1, true), Samples, ((MemoryStream)Writer.BaseStream).ToArray());
+        return new MemoryAudioStream(new(AudioBitDepth.Bits16, 1, true), Samples,
+            ((MemoryStream)Writer.BaseStream).ToArray());
     }
 
     /// <summary>
@@ -116,6 +119,7 @@ public unsafe static class Synth
             Writer.Write(Convert.ToInt16(Amplitude * Math.Sin(Frequency * I)));
         }
 
-        return new MemoryAudioStream(new(AudioBitDepth.Bits16, 1, true), Samples, ((MemoryStream)Writer.BaseStream).ToArray());
+        return new MemoryAudioStream(new(AudioBitDepth.Bits16, 1, true), Samples,
+            ((MemoryStream)Writer.BaseStream).ToArray());
     }
 }

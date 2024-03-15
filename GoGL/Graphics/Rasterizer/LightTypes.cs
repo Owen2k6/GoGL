@@ -5,6 +5,6 @@
 /// </summary>
 public enum LightTypes
 {
-	Directional,
-	Fixed,
+    Directional,
+    Fixed,
 }
