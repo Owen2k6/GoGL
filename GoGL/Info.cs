@@ -12,7 +12,7 @@ public class Info
 
     public String getVersion()
     {
-        return "0.0.3";
+        return "0.0.4";
     }
 
     public String getApiVersion()
