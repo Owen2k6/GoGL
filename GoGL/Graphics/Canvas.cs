@@ -160,10 +160,14 @@ public unsafe class Canvas
         get => _Width;
         set
         {
-            // Set new value.
+            // Only reallocate if the size actually changes
+            if (_Width == value) return;
+            
+            // Store old width for potential data copying
+            ushort oldWidth = _Width;
             _Width = value;
 
-            // Check if no allocations are needed.
+            // Skip if height is zero
             if (_Height == 0)
             {
                 return;
@@ -176,9 +180,27 @@ public unsafe class Canvas
             }
             else
             {
-                // Re-allocate new memory & automatically free old chunk.
+                // Consider preserving data when resizing
+                uint* newBuffer = (uint*)NativeMemory.Alloc(Size * 4);
+                
+                if (oldWidth > 0)
+                {
+                    // Copy data row by row if keeping content is important
+                    uint minWidth = (uint)Math.Min(oldWidth, _Width);
+                    for (int y = 0; y < _Height; y++)
+                    {
+                        Buffer.MemoryCopy(
+                            Internal + (y * oldWidth),
+                            newBuffer + (y * _Width),
+                            minWidth * 4,
+                            minWidth * 4);
+                    }
+                }
+                
+                // Release old buffer
                 GCImplementation.DecRootCount((ushort*)Internal);
-                Internal = (uint*)NativeMemory.Realloc(Internal, Size * 4);
+                NativeMemory.Free(Internal);
+                Internal = newBuffer;
             }
 
             // Prevent GC from freeing the buffer.
@@ -207,23 +229,35 @@ public unsafe class Canvas
     /// <param name="Radial">The blur intensity - 5 is typically fine.</param>
     public void DrawBlurredRectangle(int X, int Y, ushort Width, ushort Height, int Radial)
     {
+        // Early bounds checking
+        if (X >= this.Width || Y >= this.Height || X + Width <= 0 || Y + Height <= 0 || Width == 0 || Height == 0)
+        {
+            return;
+        }
+
         uint Size = (uint)(Width * Height);
 
+        // Reuse arrays if possible or consider implementing array pooling
         int[] A = new int[Size];
         int[] R = new int[Size];
         int[] G = new int[Size];
         int[] B = new int[Size];
 
+        // Extract pixel data once
         for (uint I = 0; I < Size; I++)
         {
-            // Get the source X and Y position.
             int SX = (int)(X + (I % Width));
             int SY = (int)(Y + (I / Width));
 
-            A[I] = (int)this[SX, SY].A;
-            R[I] = (int)this[SX, SY].R;
-            G[I] = (int)this[SX, SY].G;
-            B[I] = (int)this[SX, SY].B;
+            // Get color once and extract components
+            if (SX >= 0 && SY >= 0 && SX < this.Width && SY < this.Height)
+            {
+                uint color = Internal[(SY * this.Width) + SX];
+                A[I] = (int)((color >> 24) & 0xFF);
+                R[I] = (int)((color >> 16) & 0xFF);
+                G[I] = (int)((color >> 8) & 0xFF);
+                B[I] = (int)(color & 0xFF);
+            }
         }
 
         var newAlpha = new int[Size];
@@ -247,7 +281,10 @@ public unsafe class Canvas
             int SX = (int)(X + (I % Width));
             int SY = (int)(Y + (I / Width));
 
-            this[SX, SY] = new(newAlpha[I], newRed[I], newGreen[I], newBlue[I]);
+            if (SX >= 0 && SY >= 0 && SX < this.Width && SY < this.Height)
+            {
+                this[SX, SY] = new(newAlpha[I], newRed[I], newGreen[I], newBlue[I]);
+            }
         }
     }
 
@@ -501,7 +538,7 @@ public unsafe class Canvas
     public void DrawTriangle(Triangle Triangle)
     {
         DrawLine((int)Triangle.P1.X, (int)Triangle.P1.Y, (int)Triangle.P2.X, (int)Triangle.P2.Y, Triangle.Color);
-        DrawLine((int)Triangle.P1.X, (int)Triangle.P1.X, (int)Triangle.P3.X, (int)Triangle.P3.Y, Triangle.Color);
+        DrawLine((int)Triangle.P1.X, (int)Triangle.P1.Y, (int)Triangle.P3.X, (int)Triangle.P3.Y, Triangle.Color);
         DrawLine((int)Triangle.P2.X, (int)Triangle.P2.Y, (int)Triangle.P3.X, (int)Triangle.P3.Y, Triangle.Color);
     }
 
@@ -975,6 +1012,87 @@ public unsafe class Canvas
         uint* Source = Canvas.Internal;
         Canvas.Internal = Internal;
         Internal = Source;
+    }
+
+    /// <summary>
+    /// Gets the raw color value at the specified X and Y position.
+    /// </summary>
+    /// <param name="X">X position of the pixel.</param>
+    /// <param name="Y">Y position of the pixel.</param>
+    /// <returns>The raw color value at X and Y.</returns>
+    public uint GetRawColor(int X, int Y)
+    {
+        if (X < 0 || Y < 0 || X >= Width || Y >= Height)
+        {
+            return Color.Black.ARGB;
+        }
+        return Internal[(Y * Width) + X];
+    }
+
+    /// <summary>
+    /// Sets the raw color value at the specified X and Y position.
+    /// </summary>
+    /// <param name="X">X position of the pixel.</param>
+    /// <param name="Y">Y position of the pixel.</param>
+    /// <param name="color">The raw color value to set.</param>
+    public void SetRawColor(int X, int Y, uint color)
+    {
+        if (X < 0 || Y < 0 || X >= Width || Y >= Height)
+        {
+            return;
+        }
+        Internal[(Y * Width) + X] = color;
+    }
+
+    /// <summary>
+    /// Sets a pixel at the specified X and Y position with the given color.
+    /// </summary>
+    /// <param name="X">X position of the pixel.</param>
+    /// <param name="Y">Y position of the pixel.</param>
+    /// <param name="Color">The color to set.</param>
+    public void SetPixel(int X, int Y, Color Color)
+    {
+        // Fast path for direct pixel setting
+        if (X >= 0 && Y >= 0 && X < Width && Y < Height)
+        {
+            if (Color.A == 255)
+            {
+                // Fully opaque - direct write
+                Internal[(Y * Width) + X] = Color.ARGB;
+            }
+            else if (Color.A > 0)
+            {
+                // Alpha blending needed
+                Color value = Color.AlphaBlend(new Color(Internal[(Y * Width) + X]), Color);
+                Internal[(Y * Width) + X] = value.ARGB;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Calculates the clipping rectangle and offsets for drawing operations.
+    /// </summary>
+    /// <param name="x">X position.</param>
+    /// <param name="y">Y position.</param>
+    /// <param name="sourceWidth">Width of the source.</param>
+    /// <param name="sourceHeight">Height of the source.</param>
+    /// <returns>A tuple containing the clipped rectangle and offsets.</returns>
+    private (uint startX, uint startY, uint width, uint height, uint srcOffsetX, uint srcOffsetY) CalculateClipping(
+        int x, int y, uint sourceWidth, uint sourceHeight)
+    {
+        // Calculate clipped rectangle
+        uint startX = (uint)Math.Max(x, 0);
+        uint startY = (uint)Math.Max(y, 0);
+        uint endX = (uint)Math.Min(x + sourceWidth, this.Width);
+        uint endY = (uint)Math.Min(y + sourceHeight, this.Height);
+        
+        // Calculate dimensions and offsets
+        uint width = endX > startX ? endX - startX : 0;
+        uint height = endY > startY ? endY - startY : 0;
+        uint srcOffsetX = startX > x ? startX - (uint)x : 0;
+        uint srcOffsetY = startY > y ? startY - (uint)y : 0;
+        
+        return (startX, startY, width, height, srcOffsetX, srcOffsetY);
     }
 
     #endregion
